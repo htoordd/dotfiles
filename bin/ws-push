@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Push files from local to workspace via rsync.
-# Only overwrites remote files if the local version is newer.
+# Uses checksum comparison to detect changes (not timestamps).
 #
 # Usage:
 #   ws-push <workspace-name> <local-path> <remote-path>
@@ -30,16 +30,20 @@ EXTRA="${4:-}"
 
 HOST="workspace-${WS_NAME}"
 
+# The remote path may have been expanded by the local shell (~/foo -> /Users/you/foo).
+# Convert it back to ~ so rsync sends it to the workspace for expansion.
+REMOTE_PATH="${REMOTE_PATH/#$HOME/\~}"
+
 # For single files, skip trailing slash logic
 if [[ -f "$LOCAL_PATH" ]]; then
-  rsync -avz --update \
+  rsync -avz --checksum \
     $EXTRA \
     "${LOCAL_PATH}" "${HOST}:${REMOTE_PATH}"
 else
   LOCAL_PATH="${LOCAL_PATH%/}/"
   REMOTE_PATH="${REMOTE_PATH%/}/"
 
-  rsync -avz --update \
+  rsync -avz --checksum \
     --exclude='node_modules' \
     --exclude='.git' \
     --exclude='dist' \
@@ -47,6 +51,8 @@ else
     --exclude='.next' \
     --exclude='.cache' \
     --exclude='bazel-*' \
+    --exclude='.dist' \
+    --exclude='.sarif' \
     $EXTRA \
     "${LOCAL_PATH}" "${HOST}:${REMOTE_PATH}"
 fi

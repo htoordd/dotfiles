@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Pull files from workspace to local via rsync.
-# Only overwrites local files if the workspace version is newer.
+# Uses checksum comparison to detect changes (not timestamps).
 #
 # Usage:
 #   ws-pull <workspace-name> <remote-path> <local-path>
@@ -29,17 +29,31 @@ EXTRA="${4:-}"
 
 HOST="workspace-${WS_NAME}"
 
-# Ensure trailing slash on paths so rsync syncs contents, not the dir itself
-REMOTE_PATH="${REMOTE_PATH%/}/"
-LOCAL_PATH="${LOCAL_PATH%/}/"
+# The remote path may have been expanded by the local shell (~/foo -> /Users/you/foo).
+# Convert it back to ~ so rsync sends it to the workspace for expansion.
+REMOTE_PATH="${REMOTE_PATH/#$HOME/\~}"
 
-rsync -avz --update \
-  --exclude='node_modules' \
-  --exclude='.git' \
-  --exclude='dist' \
-  --exclude='build' \
-  --exclude='.next' \
-  --exclude='.cache' \
-  --exclude='bazel-*' \
-  $EXTRA \
-  "${HOST}:${REMOTE_PATH}" "${LOCAL_PATH}"
+# Check if remote path looks like a file (has an extension)
+if [[ "$REMOTE_PATH" == *.* ]]; then
+  mkdir -p "$(dirname "$LOCAL_PATH")"
+  rsync -avz --checksum \
+    $EXTRA \
+    "${HOST}:${REMOTE_PATH}" "${LOCAL_PATH}"
+else
+  # Ensure trailing slash on paths so rsync syncs contents, not the dir itself
+  REMOTE_PATH="${REMOTE_PATH%/}/"
+  LOCAL_PATH="${LOCAL_PATH%/}/"
+
+  rsync -avz --checksum \
+    --exclude='node_modules' \
+    --exclude='.git' \
+    --exclude='dist' \
+    --exclude='build' \
+    --exclude='.next' \
+    --exclude='.cache' \
+    --exclude='bazel-*' \
+    --exclude='.dist' \
+    --exclude='.sarif' \
+    $EXTRA \
+    "${HOST}:${REMOTE_PATH}" "${LOCAL_PATH}"
+fi
