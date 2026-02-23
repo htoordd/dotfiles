@@ -10,9 +10,9 @@
 
 [user]
         # The name you want to appear as the author of your commits
-        name = <YOUR NAME>
+        name = Hasan Toor
 	# The e-mail address that is associated to the author of your commits
-        email = <YOUR EMAIL>
+        email = hasan.toor@datadoghq.com
 # This next section is optional and can be omitted if you do not use ssh git
 # commit signing.  However, doing so is highly encouraged, and if you have not
 # started using this workflow, see the onboarding docs for that:
@@ -27,9 +27,17 @@
 # 	format = ssh
 
 
+# Include gitsign configuration for commit signing
+[include]
+	path = ~/.config/gitsign/gitconfig
+
 # This is a url rewrite that helps [go and maybe rust] tooling that downloads libraries from our private repos
-[url "git@github.com:DataDog/"]
-        insteadOf = https://github.com/DataDog/
+[url "git@github.com:"]
+        insteadOf = https://github.com/
+        insteadOf = git://github.com/
+
+[remote "origin"]
+	tagOpt = --no-tags
 
 # This ensures that the Datadog global githooks work.  Please don't override this in your own dotfiles unless you have a strong reason to.
 [core]

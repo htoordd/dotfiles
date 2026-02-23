@@ -1,0 +1,7 @@
+{
+  "channels": ["internal-developer-portal"],
+  "snowflake": {
+    "verified_at": "2026-02-18T00:00:00",
+    "tool_name": "mcp__snowflake__run_snowflake_query"
+  }
+}

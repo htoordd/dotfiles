@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# Kill existing sessions if they exist
+tmux kill-session -t frontend 2>/dev/null
+tmux kill-session -t backend 2>/dev/null
+
+# Frontend session (web-ui)
+tmux new-session -d -s frontend -n CODE -c "$HOME/dd/web-ui"
+tmux new-window -t frontend -n GIT -c "$HOME/dd/web-ui"
+tmux new-window -t frontend -n RESEARCH -c "$HOME/dd/web-ui"
+tmux select-window -t frontend:CODE
+
+# Backend session (dd-source)
+tmux new-session -d -s backend -n CODE -c "$HOME/dd/dd-source"
+tmux new-window -t backend -n GIT -c "$HOME/dd/dd-source"
+tmux new-window -t backend -n RESEARCH -c "$HOME/dd/dd-source"
+tmux select-window -t backend:CODE
+
+# Attach to frontend
+tmux attach -t frontend
