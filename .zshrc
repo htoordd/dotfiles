@@ -166,3 +166,19 @@ export PATH="$HOME/dotfiles/bin:$PATH"
 
 # Display for 3 seconds (3000ms)
 alias notify='tmux display-message -d 3000 "Job Done!"'
+
+# ============================================================
+# Prompt: ~/path (branch*) $
+# ============================================================
+autoload -Uz add-zsh-hook vcs_info
+setopt prompt_subst
+
+zstyle ':vcs_info:git:*' formats ' (%b%u%c)'
+zstyle ':vcs_info:git:*' actionformats ' (%b|%a%u%c)'
+zstyle ':vcs_info:git:*' check-for-changes true
+zstyle ':vcs_info:git:*' unstagedstr '*'
+zstyle ':vcs_info:git:*' stagedstr '+'
+
+add-zsh-hook precmd vcs_info
+
+PROMPT='%F{cyan}%~%f%F{yellow}${vcs_info_msg_0_}%f %F{white}$%f '
