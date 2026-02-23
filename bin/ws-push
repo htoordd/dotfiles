@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Push files from local to workspace via rsync.
+# Only overwrites remote files if the local version is newer.
+#
+# Usage:
+#   ws-push <workspace-name> <local-path> <remote-path>
+#   ws-push <workspace-name> <local-path> <remote-path> --dry-run
+#
+# Examples:
+#   ws-push myws ~/plans ~/plans
+#   ws-push myws ~/screenshots ~/screenshots
+#   ws-push myws ./my-doc.md ~/dd/web-ui/my-doc.md
+
+if [[ $# -lt 3 ]]; then
+  echo "Usage: ws-push <workspace-name> <local-path> <remote-path> [--dry-run]"
+  echo ""
+  echo "Examples:"
+  echo "  ws-push myws ~/plans ~/plans"
+  echo "  ws-push myws ~/screenshots ~/screenshots"
+  echo "  ws-push myws ./my-doc.md ~/dd/web-ui/my-doc.md"
+  exit 1
+fi
+
+WS_NAME="$1"
+LOCAL_PATH="$2"
+REMOTE_PATH="$3"
+EXTRA="${4:-}"
+
+HOST="workspace-${WS_NAME}"
+
+# For single files, skip trailing slash logic
+if [[ -f "$LOCAL_PATH" ]]; then
+  rsync -avz --update \
+    $EXTRA \
+    "${LOCAL_PATH}" "${HOST}:${REMOTE_PATH}"
+else
+  LOCAL_PATH="${LOCAL_PATH%/}/"
+  REMOTE_PATH="${REMOTE_PATH%/}/"
+
+  rsync -avz --update \
+    --exclude='node_modules' \
+    --exclude='.git' \
+    --exclude='dist' \
+    --exclude='build' \
+    --exclude='.next' \
+    --exclude='.cache' \
+    --exclude='bazel-*' \
+    $EXTRA \
+    "${LOCAL_PATH}" "${HOST}:${REMOTE_PATH}"
+fi

@@ -27,6 +27,10 @@ done
 
 echo "==> Dotfiles linked!"
 
+# Install workspace dependencies
+echo "==> Installing workspace packages..."
+sudo apt-get update -qq && sudo apt-get install -y -qq rsync xclip
+
 # Make bin/ scripts executable and available.
 # The .zshrc adds ~/dotfiles/bin to PATH directly.
 if [ -d "$DOTFILES_PATH/bin" ]; then

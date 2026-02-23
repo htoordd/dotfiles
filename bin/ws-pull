@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Pull files from workspace to local via rsync.
+# Only overwrites local files if the workspace version is newer.
+#
+# Usage:
+#   ws-pull <workspace-name> <remote-path> <local-path>
+#   ws-pull <workspace-name> <remote-path> <local-path> --dry-run
+#
+# Examples:
+#   ws-pull myws ~/dd/web-ui/packages/apps/service-catalog ~/dd/web-ui/packages/apps/service-catalog
+#   ws-pull myws ~/dd/web-ui ~/dd/web-ui --dry-run
+
+if [[ $# -lt 3 ]]; then
+  echo "Usage: ws-pull <workspace-name> <remote-path> <local-path> [--dry-run]"
+  echo ""
+  echo "Examples:"
+  echo "  ws-pull myws ~/dd/web-ui/packages/apps/service-catalog ~/dd/web-ui/packages/apps/service-catalog"
+  echo "  ws-pull myws ~/dd/dd-source/domains/service-catalog ~/dd/dd-source/domains/service-catalog"
+  echo "  ws-pull myws ~/dd/web-ui ~/dd/web-ui --dry-run"
+  exit 1
+fi
+
+WS_NAME="$1"
+REMOTE_PATH="$2"
+LOCAL_PATH="$3"
+EXTRA="${4:-}"
+
+HOST="workspace-${WS_NAME}"
+
+# Ensure trailing slash on paths so rsync syncs contents, not the dir itself
+REMOTE_PATH="${REMOTE_PATH%/}/"
+LOCAL_PATH="${LOCAL_PATH%/}/"
+
+rsync -avz --update \
+  --exclude='node_modules' \
+  --exclude='.git' \
+  --exclude='dist' \
+  --exclude='build' \
+  --exclude='.next' \
+  --exclude='.cache' \
+  --exclude='bazel-*' \
+  $EXTRA \
+  "${HOST}:${REMOTE_PATH}" "${LOCAL_PATH}"
