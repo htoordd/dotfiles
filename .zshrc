@@ -104,7 +104,7 @@ function gcb() {
     return 1
   fi
 
-  git checkout -b "$USER/$branch_name"
+  git checkout -b "hasan.toor/$branch_name"
 }
 
 function gpuo() {
